@@ -181,7 +181,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
     case MACRO_REDO:
       if (record->event.pressed) {
-        SEND_STRING(SS_LGUI("y"));
+        register_code(KC_LGUI);
+        SEND_STRING(SS_LSFT("z"));
+        unregister_code(KC_LGUI);
       }
       return false;
       break;
