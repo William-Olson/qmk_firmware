@@ -13,21 +13,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include QMK_KEYBOARD_H
+#define TAPPING_TOGGLE 2
 
 #define _MAIN_LAYER   0
 #define _LOWER_LAYER  1
 #define _UPPER_LAYER  2
 #define _ADJUST_LAYER 3
-#define _LAYER4       4
+#define _UTIL_LAYER   4
 
-enum custom_osx_macros {
+#include QMK_KEYBOARD_H
+
+typedef enum {
+    LC_AMBER = 0,
+    LC_RED,
+    LC_BLUE,
+    LC_WHITE,
+    LC_GREEN,
+    LC_PURPLE,
+} LIGHTING_COLOR;
+
+enum CUSTOM_OSX_MACRO {
     MACRO_REFRESH  = SAFE_RANGE,
     MACRO_COPY,
     MACRO_PASTE,
     MACRO_CUT,
     MACRO_REDO,
     MACRO_UNDO,
+    MACRO_CP_URL,
     MACRO_APP_SWITCHER
 };
 
@@ -54,11 +66,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_MAIN_LAYER] = LAYOUT_ortho_5x15(
-      KC_ESC,              KC_1,     KC_2,     KC_3,     KC_4,  KC_5,   KC_6,   KC_7,  KC_8,     KC_9,         KC_0,        KC_MINS,  KC_F24,   KC_INS,   KC_DEL, 
-      KC_GRV,              KC_Q,     KC_W,     KC_E,     KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,     KC_O,         KC_P,        KC_BSPC,  KC_F23,   KC_HOME,  KC_PGUP,
-      KC_TAB,              KC_A,     KC_S,     KC_D,     KC_F,  KC_G,   KC_H,   KC_J,  KC_K,     KC_L,         KC_SCLN,     KC_QUOT,  KC_F22,   KC_END,   KC_PGDN,
-      KC_LSFT,             KC_Z,     KC_X,     KC_C,     KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM,  KC_DOT,       KC_SLSH,     KC_ENT,   KC_F21,   KC_UP,    KC_F20,
-      MACRO_APP_SWITCHER,  KC_LCTL,  KC_LALT,  KC_LGUI,  LOWER, KC_SPC, KC_SPC, UPPER, KC_RGUI,  MACRO_COPY,   MACRO_PASTE, TT(4),    KC_LEFT,  KC_DOWN,  KC_RGHT
+      KC_ESC,              KC_1,     KC_2,     KC_3,     KC_4,  KC_5,   KC_6,   KC_7,  KC_8,     KC_9,         KC_0,        KC_MINS,            KC_F24,   KC_INS,   KC_DEL, 
+      KC_GRV,              KC_Q,     KC_W,     KC_E,     KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,     KC_O,         KC_P,        KC_BSPC,            KC_F23,   KC_HOME,  KC_PGUP,
+      KC_TAB,              KC_A,     KC_S,     KC_D,     KC_F,  KC_G,   KC_H,   KC_J,  KC_K,     KC_L,         KC_SCLN,     KC_QUOT,            KC_F22,   KC_END,   KC_PGDN,
+      KC_LSFT,             KC_Z,     KC_X,     KC_C,     KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM,  KC_DOT,       KC_SLSH,     KC_ENT,             KC_F21,   KC_UP,    KC_F20,
+      MACRO_APP_SWITCHER,  KC_LCTL,  KC_LALT,  KC_LGUI,  LOWER, KC_SPC, KC_SPC, UPPER, KC_RGUI,  MACRO_COPY,   MACRO_PASTE, TT(_UTIL_LAYER),    KC_LEFT,  KC_DOWN,  KC_RGHT
     ),
 
     /* Lower Layer
@@ -137,20 +149,124 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |
     * `--------------------------------------------------------------------------------------------------------'
     */
-    [_LAYER4] = LAYOUT_ortho_5x15(
-      KC_CLR,   KC_F13,   KC_F14,         KC_F15,      KC_F16,      KC_F17,   KC_F18,   KC_F19,   KC_F20,   KC_F21,   KC_F22,  KC_F23,        KC_F24,  _______, KC_SLEP, 
-      _______,  _______,  _______,        _______,     _______,     _______,  _______,  _______,  _______,  _______,  _______, MACRO_UNDO,    _______, _______, _______,
-      _______,  _______,  KC_WWW_SEARCH,  _______,     KC_FIND,     _______,  _______,  _______,  _______,  _______,  _______, MACRO_REDO,    _______, _______, _______,
-      _______,  _______,  MACRO_CUT,      MACRO_COPY,  MACRO_PASTE, _______,  _______,  _______,  _______,  _______,  _______, MACRO_REFRESH, _______, _______, _______,
-      _______,  _______,  _______,        _______,     _______,     _______,  _______,  _______,  _______,  _______,  _______, _______,       _______, _______, _______
+    [_UTIL_LAYER] = LAYOUT_ortho_5x15(
+      KC_CLR,   KC_F13,   KC_F14,         KC_F15,      KC_F16,      KC_F17,   KC_F18,   KC_F19,   KC_F20,   KC_F21,   KC_F22,  KC_F23,        KC_F24,       _______, KC_SLEP, 
+      _______,  _______,  _______,        _______,     _______,     _______,  _______,  _______,  _______,  _______,  _______, MACRO_UNDO,    _______,      _______, _______,
+      _______,  _______,  KC_WWW_SEARCH,  _______,     KC_FIND,     _______,  _______,  _______,  _______,  _______,  _______, MACRO_REDO,    _______,      _______, _______,
+      _______,  _______,  MACRO_CUT,      MACRO_COPY,  MACRO_PASTE, _______,  _______,  _______,  _______,  _______,  _______, MACRO_REFRESH, MACRO_CP_URL, _______, _______,
+      _______,  _______,  _______,        _______,     _______,     _______,  _______,  _______,  _______,  _______,  _______, _______,       _______,      _______, _______
     )
 
 };
 
-// allow three layer acces with the LOWER and UPPER keys
-layer_state_t layer_state_set_user(layer_state_t state) {
-  return update_tri_layer_state(state, _LOWER_LAYER, _UPPER_LAYER, _ADJUST_LAYER);
+
+
+
+////////////////////////////////////////////////////////////////
+///////////////////////    RGB Helpers   ///////////////////////
+////////////////////////////////////////////////////////////////
+
+// Default LED colors
+uint8_t h = 170;
+uint8_t s = 255;
+uint8_t v = 0;
+
+// default animation
+int rgbMode = RGB_MODE_PLAIN;
+
+// boot animation
+int rgbBootMode = RGB_MODE_GRADIENT;
+
+// boot timeout vars
+uint8_t bootComplete = 0;
+int bootTimeoutDuration = 4000;
+int bootTimeout;
+
+
+void init_hsv_brightness(void) {
+  // fetch what the brightness was last session
+	h = rgblight_get_hue();
+	s = rgblight_get_sat();
+	v = rgblight_get_val();
+	rgbMode = rgblight_get_mode();
+  rgblight_sethsv(h,s,v);
 }
+
+// reset HSV va
+void reset_hsv(void) {
+  uint8_t currentV = rgblight_get_val();
+	rgblight_sethsv(h,s,currentV);
+}
+
+/*
+  Deterimes when to stop bootup animation
+*/
+void checkBootupAnimation(void) {
+  if (bootComplete == 1) {
+    return;
+  }
+
+  bootComplete = (timer_elapsed(bootTimeout) > bootTimeoutDuration) ? 1 : 0;
+
+  if (bootComplete) {
+    rgblight_mode(rgbMode);
+  }
+}
+
+/*
+  Starts the boot animation and timers
+*/
+void init_lighting(void) {
+    // start a timeout
+  bootTimeout = timer_read();
+
+  // set rgb color
+  init_hsv_brightness();
+
+  // init rgb
+  rgblight_enable();
+
+  // animate with boot sequence
+  rgblight_mode(rgbBootMode);
+}
+
+/*
+  Allows setting an rgb color
+*/
+void set_lighting_color(LIGHTING_COLOR color) {
+  if (bootComplete == 0) {
+    return;
+  }
+  switch (color) {
+    case LC_AMBER:
+        rgblight_sethsv(25, s, rgblight_get_val());
+        break;
+    case LC_RED:
+        rgblight_sethsv(0, s, rgblight_get_val());
+        break;
+    case LC_BLUE:
+        rgblight_sethsv(148, s, rgblight_get_val());
+        break;
+    case LC_WHITE:
+        rgblight_sethsv(155, 50, rgblight_get_val());
+        break;
+    case LC_GREEN:
+	      rgblight_sethsv(80, s, rgblight_get_val());
+        break;
+    case LC_PURPLE:
+        rgblight_sethsv(170, s, rgblight_get_val());
+        break;
+    default:
+        break;
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////
+////////////////////      QMK Callbacks    /////////////////////
+////////////////////////////////////////////////////////////////
+
 
 // macro handler
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -181,15 +297,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
     case MACRO_REDO:
       if (record->event.pressed) {
-        register_code(KC_LGUI);
-        SEND_STRING(SS_LSFT("z"));
-        unregister_code(KC_LGUI);
+        SEND_STRING(SS_LGUI(SS_LSFT("z")));
       }
       return false;
       break;
     case MACRO_UNDO:
       if (record->event.pressed) {
         SEND_STRING(SS_LGUI("z"));
+      }
+      return false;
+      break;
+    case MACRO_CP_URL:
+      if (record->event.pressed) {
+        SEND_STRING(SS_LGUI("l")SS_LGUI("c"));
       }
       return false;
       break;
@@ -209,7 +329,54 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   return true;
 }
 
+/*
+  Callback for layer functions. Triggered on layer changes.
+*/
+layer_state_t layer_state_set_user(layer_state_t state) {
+
+  // trigger color change based on layer state
+  switch (get_highest_layer(state)) {
+    case _MAIN_LAYER:
+        reset_hsv();
+        break;
+    case _LOWER_LAYER:
+        set_lighting_color(LC_AMBER);
+        break;
+    case _UPPER_LAYER:
+        set_lighting_color(LC_PURPLE);
+        break;
+    case _ADJUST_LAYER:
+        set_lighting_color(LC_WHITE);
+        break;
+    case _UTIL_LAYER:
+        set_lighting_color(LC_GREEN);
+        break;
+    default:
+        break;
+  }
+
+  // allow three layer acces with the LOWER and UPPER keys
+  return update_tri_layer_state(state, _LOWER_LAYER, _UPPER_LAYER, _ADJUST_LAYER);
+}
+
+
+/*
+  Callback for default layer functions. Called on keyboard initialization.
+*/
+void keyboard_post_init_user(void) {
+  // init boot animation
+  init_lighting();
+};
+
+/*
+  Called very frequently (many times per second). Take caution around
+  performance inside this function.
+*/
 void matrix_scan_user(void) {
+  
+  // disable the bootup animation after time elapsed
+  checkBootupAnimation();
+
   // release app switcher check
   if (is_app_switcher_active) {
     if (timer_elapsed(app_switcher_timer) > app_switcher_keep_open_threshold_ms) {
