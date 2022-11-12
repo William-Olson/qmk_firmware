@@ -70,7 +70,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_GRV,              KC_Q,     KC_W,     KC_E,     KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,     KC_O,         KC_P,        KC_BSPC,            KC_F23,   KC_HOME,  KC_PGUP,
       KC_TAB,              KC_A,     KC_S,     KC_D,     KC_F,  KC_G,   KC_H,   KC_J,  KC_K,     KC_L,         KC_SCLN,     KC_QUOT,            KC_F22,   KC_END,   KC_PGDN,
       KC_LSFT,             KC_Z,     KC_X,     KC_C,     KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM,  KC_DOT,       KC_SLSH,     KC_ENT,             KC_F21,   KC_UP,    KC_F20,
-      MACRO_APP_SWITCHER,  KC_LCTL,  KC_LALT,  KC_LGUI,  LOWER, KC_SPC, KC_SPC, UPPER, KC_RGUI,  MACRO_COPY,   MACRO_PASTE, TT(_UTIL_LAYER),    KC_LEFT,  KC_DOWN,  KC_RGHT
+      MACRO_APP_SWITCHER,  KC_LCTL,  KC_LALT,  KC_LGUI,  LOWER, KC_SPC, KC_SPC, UPPER, KC_RGUI,  MACRO_COPY,   MACRO_PASTE, MO(_UTIL_LAYER),    KC_LEFT,  KC_DOWN,  KC_RGHT
     ),
 
     /* Lower Layer
@@ -87,7 +87,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_LOWER_LAYER] = LAYOUT_ortho_5x15(
-      _______, _______, _______,  _______,  _______,  _______,  _______,  _______, _______, _______, _______, _______, _______, _______, _______, 
+      RESET,   _______, _______,  _______,  _______,  _______,  _______,  _______, _______, _______, _______, _______, _______, _______, _______, 
       _______, KC_EXLM, KC_AT,    KC_HASH,  KC_DLR,   KC_PERC,  KC_CIRC,  KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______, _______, _______, _______,
       _______, KC_F1,   KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, _______, _______, _______,
       _______, KC_F7,   KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   _______, _______, _______, _______, _______, _______, KC_VOLU, KC_MNXT,
@@ -108,7 +108,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_UPPER_LAYER] = LAYOUT_ortho_5x15(
-      _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, 
+      RESET,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, 
       _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______, _______, _______, _______,
       _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_MINS, KC_PEQL, KC_LBRC, KC_RBRC, KC_BSLS, _______, _______, _______,
       _______, KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, _______, _______, _______, _______, KC_VOLU, _______,
@@ -175,11 +175,12 @@ uint8_t v = 0;
 int rgbMode = RGB_MODE_PLAIN;
 
 // boot animation
-int rgbBootMode = RGB_MODE_GRADIENT;
+// int rgbBootMode = RGB_MODE_SNAKE;
+int rgbBootMode = RGB_MODE_SWIRL;
 
 // boot timeout vars
-uint8_t bootComplete = 0;
-int bootTimeoutDuration = 4000;
+bool bootComplete = false;
+int bootTimeoutDuration = 5000;
 int bootTimeout;
 
 
@@ -202,11 +203,11 @@ void reset_hsv(void) {
   Deterimes when to stop bootup animation
 */
 void checkBootupAnimation(void) {
-  if (bootComplete == 1) {
+  if (bootComplete) {
     return;
   }
 
-  bootComplete = (timer_elapsed(bootTimeout) > bootTimeoutDuration) ? 1 : 0;
+  bootComplete = (timer_elapsed(bootTimeout) > bootTimeoutDuration) ? true : false;
 
   if (bootComplete) {
     rgblight_mode(rgbMode);
@@ -217,10 +218,10 @@ void checkBootupAnimation(void) {
   Starts the boot animation and timers
 */
 void init_lighting(void) {
-    // start a timeout
+  // start a timeout
   bootTimeout = timer_read();
 
-  // set rgb color
+  // set rgb color / brightness
   init_hsv_brightness();
 
   // init rgb
@@ -233,28 +234,28 @@ void init_lighting(void) {
 /*
   Allows setting an rgb color
 */
-void set_lighting_color(LIGHTING_COLOR color) {
+void set_lighting_color_temporarily(LIGHTING_COLOR color) {
   if (bootComplete == 0) {
     return;
   }
   switch (color) {
     case LC_AMBER:
-        rgblight_sethsv(25, s, rgblight_get_val());
+        rgblight_sethsv_noeeprom(25, s, rgblight_get_val());
         break;
     case LC_RED:
-        rgblight_sethsv(0, s, rgblight_get_val());
+        rgblight_sethsv_noeeprom(0, s, rgblight_get_val());
         break;
     case LC_BLUE:
-        rgblight_sethsv(148, s, rgblight_get_val());
+        rgblight_sethsv_noeeprom(148, s, rgblight_get_val());
         break;
     case LC_WHITE:
-        rgblight_sethsv(155, 50, rgblight_get_val());
+        rgblight_sethsv_noeeprom(155, 50, rgblight_get_val());
         break;
     case LC_GREEN:
-	      rgblight_sethsv(80, s, rgblight_get_val());
+	      rgblight_sethsv_noeeprom(80, s, rgblight_get_val());
         break;
     case LC_PURPLE:
-        rgblight_sethsv(170, s, rgblight_get_val());
+        rgblight_sethsv_noeeprom(170, s, rgblight_get_val());
         break;
     default:
         break;
@@ -334,22 +335,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 */
 layer_state_t layer_state_set_user(layer_state_t state) {
 
+  // activate the ADJUST layer if the RAISE and LOWER are active
+  // update_tri_layer_state(state, _LOWER_LAYER, _UPPER_LAYER, _ADJUST_LAYER);
+
   // trigger color change based on layer state
-  switch (get_highest_layer(state)) {
+  switch (get_highest_layer(
+    update_tri_layer_state(state, _LOWER_LAYER, _UPPER_LAYER, _ADJUST_LAYER)
+  )) {
     case _MAIN_LAYER:
         reset_hsv();
         break;
     case _LOWER_LAYER:
-        set_lighting_color(LC_AMBER);
+        set_lighting_color_temporarily(LC_AMBER);
         break;
     case _UPPER_LAYER:
-        set_lighting_color(LC_PURPLE);
+        set_lighting_color_temporarily(LC_PURPLE);
         break;
     case _ADJUST_LAYER:
-        set_lighting_color(LC_WHITE);
+        set_lighting_color_temporarily(LC_WHITE);
         break;
     case _UTIL_LAYER:
-        set_lighting_color(LC_GREEN);
+        set_lighting_color_temporarily(LC_GREEN);
         break;
     default:
         break;
@@ -375,7 +381,9 @@ void keyboard_post_init_user(void) {
 void matrix_scan_user(void) {
   
   // disable the bootup animation after time elapsed
-  checkBootupAnimation();
+  if (!bootComplete) {
+    checkBootupAnimation();
+  }
 
   // release app switcher check
   if (is_app_switcher_active) {
