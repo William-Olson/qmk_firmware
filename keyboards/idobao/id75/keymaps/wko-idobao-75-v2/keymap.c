@@ -13,13 +13,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define TAPPING_TOGGLE 2
+
+// #define TAPPING_TOGGLE 2
 
 #define _MAIN_LAYER   0
 #define _LOWER_LAYER  1
 #define _UPPER_LAYER  2
 #define _ADJUST_LAYER 3
 #define _UTIL_LAYER   4
+
+#define LOWER MO(_LOWER_LAYER)
+#define UPPER MO(_UPPER_LAYER)
+#define UTILS MO(_UTIL_LAYER)
+#define LAYER_COUNT 5
 
 #include QMK_KEYBOARD_H
 
@@ -47,10 +53,8 @@ bool is_app_switcher_active = false;
 uint16_t app_switcher_timer = 0;
 uint16_t app_switcher_keep_open_threshold_ms = 1200;
 
-#define LOWER MO(_LOWER_LAYER)
-#define UPPER MO(_UPPER_LAYER)
 
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+const uint16_t PROGMEM keymaps[LAYER_COUNT][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* Main Layer
     * ,--------------------------------------------------------------------------------------------------------.
@@ -70,7 +74,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_GRV,              KC_Q,     KC_W,     KC_E,     KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,     KC_O,         KC_P,        KC_BSPC,            KC_F23,   KC_HOME,  KC_PGUP,
       KC_TAB,              KC_A,     KC_S,     KC_D,     KC_F,  KC_G,   KC_H,   KC_J,  KC_K,     KC_L,         KC_SCLN,     KC_QUOT,            KC_F22,   KC_END,   KC_PGDN,
       KC_LSFT,             KC_Z,     KC_X,     KC_C,     KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM,  KC_DOT,       KC_SLSH,     KC_ENT,             KC_F21,   KC_UP,    KC_F20,
-      MACRO_APP_SWITCHER,  KC_LCTL,  KC_LALT,  KC_LGUI,  LOWER, KC_SPC, KC_SPC, UPPER, KC_RGUI,  MACRO_COPY,   MACRO_PASTE, MO(_UTIL_LAYER),    KC_LEFT,  KC_DOWN,  KC_RGHT
+      MACRO_APP_SWITCHER,  KC_LCTL,  KC_LALT,  KC_LGUI,  LOWER, KC_SPC, KC_SPC, UPPER, KC_RGUI,  MACRO_COPY,   MACRO_PASTE, UTILS,              KC_LEFT,  KC_DOWN,  KC_RGHT
     ),
 
     /* Lower Layer
@@ -136,7 +140,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______, _______, _______, _______, _______,  _______,  _______, _______,   _______, _______, _______, _______, _______, _______, _______
     ),
 
-    /* Layer 4 - (utility layer)
+    /* Utility layer
     * ,--------------------------------------------------------------------------------------------------------.
     * |  Clr |  F13 |  F14 |  F15 |  F16 |  F17 |  F18 |  F19 |  F20 |  F21 |  F22 |  F23 |  F24 |   ▼  | Sleep|
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
@@ -144,7 +148,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * |   ▼  |   ▼  | Srch |   ▼  | Find |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  | Redo |   ▼  |   ▼  |   ▼  |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
-    * |   ▼  |   ▼  | Cut  | Copy | Paste|   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |Refrsh|   ▼  |   ▼  |   ▼  |
+    * |   ▼  |   ▼  | Cut  | Copy | Paste|   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |Refrsh|UrlCpy|   ▼  |   ▼  |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |   ▼  |
     * `--------------------------------------------------------------------------------------------------------'
@@ -155,7 +159,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______,  _______,  KC_WWW_SEARCH,  _______,     KC_FIND,     _______,  _______,  _______,  _______,  _______,  _______, MACRO_REDO,    _______,      _______, _______,
       _______,  _______,  MACRO_CUT,      MACRO_COPY,  MACRO_PASTE, _______,  _______,  _______,  _______,  _______,  _______, MACRO_REFRESH, MACRO_CP_URL, _______, _______,
       _______,  _______,  _______,        _______,     _______,     _______,  _______,  _______,  _______,  _______,  _______, _______,       _______,      _______, _______
-    )
+    ),
 
 };
 
@@ -175,8 +179,12 @@ uint8_t v = 0;
 int rgbMode = RGB_MODE_PLAIN;
 
 // boot animation
-// int rgbBootMode = RGB_MODE_SNAKE;
-int rgbBootMode = RGB_MODE_SWIRL;
+int rgbBootMode = RGB_MODE_SNAKE;
+// int rgbBootMode = RGB_MODE_SWIRL;
+// int rgbBootMode = RGB_MODE_XMAS;
+// int rgbBootMode = RGB_MODE_FORWARD;
+// int rgbBootMode = RGB_MODE_RAINBOW;
+// int rgbBootMode = RGB_MODE_BREATHE;
 
 // boot timeout vars
 bool bootComplete = false;
@@ -184,8 +192,8 @@ int bootTimeoutDuration = 5000;
 int bootTimeout;
 
 
-void init_hsv_brightness(void) {
-  // fetch what the brightness was last session
+// fetch what the hsv was last session and set it
+void init_hsv(void) {
 	h = rgblight_get_hue();
 	s = rgblight_get_sat();
 	v = rgblight_get_val();
@@ -193,10 +201,16 @@ void init_hsv_brightness(void) {
   rgblight_sethsv(h,s,v);
 }
 
-// reset HSV va
+// load and set HSV values from eeprom
 void reset_hsv(void) {
-  uint8_t currentV = rgblight_get_val();
-	rgblight_sethsv(h,s,currentV);
+  rgblight_reload_from_eeprom();
+
+  // set lighting based on loaded values
+	rgblight_sethsv_noeeprom(
+    rgblight_get_hue(),
+    rgblight_get_sat(),
+    rgblight_get_val()
+  );
 }
 
 /*
@@ -222,13 +236,16 @@ void init_lighting(void) {
   bootTimeout = timer_read();
 
   // set rgb color / brightness
-  init_hsv_brightness();
+  init_hsv();
 
   // init rgb
   rgblight_enable();
 
+  // // set the initial color to red
+  // rgblight_sethsv(0, 255, rgblight_get_val());
+
   // animate with boot sequence
-  rgblight_mode(rgbBootMode);
+  rgblight_mode_noeeprom(rgbBootMode);
 }
 
 /*
@@ -352,10 +369,12 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         set_lighting_color_temporarily(LC_PURPLE);
         break;
     case _ADJUST_LAYER:
-        set_lighting_color_temporarily(LC_WHITE);
+        // set_lighting_color_temporarily(LC_WHITE);
+        reset_hsv();
         break;
     case _UTIL_LAYER:
         set_lighting_color_temporarily(LC_GREEN);
+        return state;
         break;
     default:
         break;
@@ -379,7 +398,7 @@ void keyboard_post_init_user(void) {
   performance inside this function.
 */
 void matrix_scan_user(void) {
-  
+
   // disable the bootup animation after time elapsed
   if (!bootComplete) {
     checkBootupAnimation();
