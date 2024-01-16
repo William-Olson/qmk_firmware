@@ -210,7 +210,7 @@ enum {
   to trigger the game mode default layer.
   Palette refers to a text editor's command dropdown menu (for example VS Code's or Atom's).
 */
-void fn_key_tapped(qk_tap_dance_state_t *state, void *user_data) {
+void fn_key_tapped(tap_dance_state_t *state, void *user_data) {
   switch (state->count) {
     case 2: // tapping 2 times opens the command palette
       SEND_STRING(OSS_MOD(SS_LSFT("p")));
@@ -233,7 +233,7 @@ void fn_key_tapped(qk_tap_dance_state_t *state, void *user_data) {
 }
 
 // Tap Dances Available
-qk_tap_dance_action_t tap_dance_actions[] = {
+tap_dance_action_t tap_dance_actions[] = {
     // tap dance handler for 'Fn' key presses
     [TD_KC_FN] = ACTION_TAP_DANCE_FN(fn_key_tapped),
 };
@@ -323,7 +323,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_LOWER_LAYER] = LAYOUT_ortho_5x15(
-      RESET,   _______, _______,  _______,  _______,  _______,  _______,  _______, _______, _______, _______, _______,  _______, _______, _______,
+      QK_BOOT,   _______, _______,  _______,  _______,  _______,  _______,  _______, _______, _______, _______, _______,  _______, _______, _______,
       _______, KC_EXLM, KC_AT,    KC_HASH,  KC_DLR,   KC_PERC,  KC_CIRC,  KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,  _______, _______, _______,
       _______, KC_F1,   KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE,  _______, _______, _______,
       _______, KC_F7,   KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,   _______, _______, _______, _______, _______,  _______, KC_VOLU, KC_MNXT,
@@ -344,7 +344,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_UPPER_LAYER] = LAYOUT_ortho_5x15(
-      RESET,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______, _______, _______,
+      QK_BOOT,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______, _______, _______,
       _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,  _______, _______, _______,
       _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_MINS, KC_PEQL, KC_LBRC, KC_RBRC, KC_BSLS,  _______, _______, _______,
       _______, KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, _______, _______, _______,  _______, KC_VOLU, _______,
@@ -365,9 +365,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_ADJUST_LAYER] = LAYOUT_ortho_5x15(
-      _______, _______,       _______, _______,       _______,  _______,  _______, _______,   _______, _______, _______, _______,  DEBUG,   _______, RESET,
+      _______, _______,       _______, _______,       _______,  _______,  _______, _______,   _______, _______, _______, _______,  DB_TOGG, _______, QK_BOOT,
       _______, BL_STEP,       RGB_VAI, RGB_TOG,       _______,  _______,  RGB_SAI, RGB_SAD,   _______, _______, BL_TOGG, _______,  _______, _______, _______,
-      _______, MACRO_DEC_HUE, RGB_VAD, MACRO_INC_HUE, BL_INC,   BL_DEC,   RGB_MOD, RGB_RMOD,  RGB_SPI, RGB_SPD, BL_BRTG, _______,  _______, _______, _______,
+      _______, MACRO_DEC_HUE, RGB_VAD, MACRO_INC_HUE, BL_UP,    BL_DOWN,  RGB_MOD, RGB_RMOD,  RGB_SPI, RGB_SPD, BL_BRTG, _______,  _______, _______, _______,
       _______, _______,       _______, _______,       _______,  _______,  _______, _______,   _______, _______, _______, _______,  _______, _______, _______,
       _______, _______,       _______, _______,       _______,  _______,  _______, _______,   _______, _______, _______, KC_TRNS,  _______, _______, _______
     )
