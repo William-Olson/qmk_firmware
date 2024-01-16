@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
+#include "willko_rgb_helper.h"
 
 enum ortho_layers {
   _MAIN_LAYER,
@@ -43,17 +44,8 @@ enum ortho_layers {
 // #define OSS_MOD_KC KC_LCTL
 
 /*
-  Enums for RGB Light Colors and Custom Macros
+  Enums for Custom Macros
 */
-
-typedef enum {
-    LC_AMBER = 0,
-    LC_RED,
-    LC_BLUE,
-    LC_WHITE,
-    LC_GREEN,
-    LC_PURPLE,
-} LIGHTING_COLOR;
 
 enum CUSTOM_MACROS {
     MACRO_REFRESH  = SAFE_RANGE,
@@ -84,116 +76,6 @@ bool can_enable_game_mode = true;
 // variable for allowing color change while on the ADJUST layer
 bool isUserChangingRgb = false;
 
-
-////////////////////////////////////////////////////////////////
-///////////////////////    RGB Helpers   ///////////////////////
-////////////////////////////////////////////////////////////////
-
-// Default LED colors
-uint8_t h = 170;
-uint8_t s = 255;
-uint8_t v = 0;
-
-// default animation
-int rgbMode = RGB_MODE_PLAIN;
-
-// boot animation
-int rgbBootMode = RGB_MODE_SNAKE;
-// int rgbBootMode = RGB_MODE_SWIRL;
-// int rgbBootMode = RGB_MODE_XMAS;
-// int rgbBootMode = RGB_MODE_FORWARD;
-// int rgbBootMode = RGB_MODE_RAINBOW;
-// int rgbBootMode = RGB_MODE_BREATHE;
-
-// boot timeout vars
-bool bootComplete = false;
-int bootTimeoutDuration = 5000;
-int bootTimeout;
-
-
-// fetch what the hsv was last session and set it
-void init_hsv(void) {
-	h = rgblight_get_hue();
-	s = rgblight_get_sat();
-	v = rgblight_get_val();
-	rgbMode = rgblight_get_mode();
-  rgblight_sethsv(h,s,v);
-}
-
-// load and set HSV values from eeprom
-void set_hsv_from_eeprom(void) {
-  rgblight_reload_from_eeprom();
-
-  // set lighting based on loaded values
-	rgblight_sethsv_noeeprom(
-    rgblight_get_hue(),
-    rgblight_get_sat(),
-    rgblight_get_val()
-  );
-}
-
-/*
-  Deterimes when to stop bootup animation
-*/
-void checkBootupAnimation(void) {
-  if (bootComplete) {
-    return;
-  }
-
-  bootComplete = (timer_elapsed(bootTimeout) > bootTimeoutDuration) ? true : false;
-
-  if (bootComplete) {
-    rgblight_mode(rgbMode);
-  }
-}
-
-/*
-  Starts the boot animation and timers
-*/
-void init_lighting(void) {
-  // start a timeout
-  bootTimeout = timer_read();
-
-  // set rgb color / brightness
-  init_hsv();
-
-  // init rgb
-  rgblight_enable();
-
-  // animate with boot sequence
-  rgblight_mode_noeeprom(rgbBootMode);
-}
-
-/*
-  Allows setting an rgb lighting color
-*/
-void set_lighting_color_temporarily(LIGHTING_COLOR color) {
-  if (bootComplete == 0) {
-    return;
-  }
-  switch (color) {
-    case LC_AMBER:
-        rgblight_sethsv_noeeprom(25, s, rgblight_get_val());
-        break;
-    case LC_RED:
-        rgblight_sethsv_noeeprom(0, s, rgblight_get_val());
-        break;
-    case LC_BLUE:
-        rgblight_sethsv_noeeprom(148, s, rgblight_get_val());
-        break;
-    case LC_WHITE:
-        rgblight_sethsv_noeeprom(155, 50, rgblight_get_val());
-        break;
-    case LC_GREEN:
-	      rgblight_sethsv_noeeprom(80, s, rgblight_get_val());
-        break;
-    case LC_PURPLE:
-        rgblight_sethsv_noeeprom(170, s, rgblight_get_val());
-        break;
-    default:
-        break;
-  }
-}
 
 
 ////////////////////////////////////////////////////////////////
@@ -516,7 +398,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         break;
   }
 
-  // allow three layer acces with the LOWER and UPPER keys
+  // allow layer three access with the LOWER and UPPER keys
   return state;
 }
 
@@ -536,8 +418,8 @@ void keyboard_post_init_user(void) {
 void matrix_scan_user(void) {
 
   // disable the bootup animation after time elapsed
-  if (!bootComplete) {
-    checkBootupAnimation();
+  if (!is_boot_animation_done()) {
+    check_boot_animation();
   }
 
   // release app switcher check
