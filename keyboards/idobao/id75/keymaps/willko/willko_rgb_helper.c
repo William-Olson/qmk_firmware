@@ -1,3 +1,19 @@
+/* Copyright 2018 MechMerlin
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include QMK_KEYBOARD_H
 #include "willko_rgb_helper.h"
 
@@ -53,10 +69,6 @@ void init_lighting(void) {
   rgblight_mode_noeeprom(rgbBootMode);
 }
 
-bool is_boot_animation_done(void) {
-    return bootComplete;
-}
-
 // load and set HSV values from eeprom
 void set_hsv_from_eeprom(void) {
   rgblight_reload_from_eeprom();
@@ -72,9 +84,9 @@ void set_hsv_from_eeprom(void) {
 /*
   Deterimes when to stop bootup animation
 */
-void check_boot_animation(void) {
+bool check_boot_animation(void) {
   if (bootComplete) {
-    return;
+    return bootComplete;
   }
 
   bootComplete = (timer_elapsed(bootTimeout) > bootTimeoutDuration) ? true : false;
@@ -82,6 +94,8 @@ void check_boot_animation(void) {
   if (bootComplete) {
     rgblight_mode(rgbMode);
   }
+
+  return bootComplete;
 }
 
 

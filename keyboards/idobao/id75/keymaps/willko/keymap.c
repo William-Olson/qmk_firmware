@@ -29,19 +29,16 @@ enum ortho_layers {
 #define UPPER MO(_UPPER_LAYER)
 #define UTILS TT(_UTIL_LAYER)
 
+
 /*
-  Operating System Specific Modifiers
+    Handle using the right modifier key per OS Specific Keymappings
+    Default is osx, togglable via tap dance modifier TD(TD_KC_FN) with
+    three taps from the user.
 */
+bool using_osx = true;
+#define OSS_MOD_KC (using_osx ? KC_LGUI : KC_LCTL)
+#define OSS_SEND(string) (using_osx ? SEND_STRING(SS_LGUI(string)) : SEND_STRING(SS_LCTL(string)))
 
-// for Mac
-#define OSS_MOD(string) SS_LGUI(string)
-#define OSS_MOD_KC KC_LGUI
-
-// (for Windows, just comment out the previous 2 lines and uncomment the following lines instead)
-
-// // for Windows
-// #define OSS_MOD(string) SS_LCTL(string)
-// #define OSS_MOD_KC KC_LCTL
 
 /*
   Enums for Custom Macros
@@ -71,11 +68,13 @@ uint16_t app_switcher_timer = 0;
 uint16_t app_switcher_keep_open_threshold_ms = 1200;
 
 // game mode layer state
-bool can_enable_game_mode = true;
+bool game_mode_enabled = false;
 
 // variable for allowing color change while on the ADJUST layer
-bool isUserChangingRgb = false;
+bool is_user_changing_rgb = false;
 
+// used for rgb boot animation
+bool is_boot_animation_done = false;
 
 
 ////////////////////////////////////////////////////////////////
@@ -95,18 +94,22 @@ enum {
 void fn_key_tapped(tap_dance_state_t *state, void *user_data) {
   switch (state->count) {
     case 2: // tapping 2 times opens the command palette
-      SEND_STRING(OSS_MOD(SS_LSFT("p")));
+      OSS_SEND(SS_LSFT("p"));
+      reset_tap_dance(state);
+      return;
+    case 3: // tapping 3 times changes the OS mode
+      using_osx = !using_osx;
       reset_tap_dance(state);
       return;
     case 5: // tapping 5 times toggles game mode
-      if (can_enable_game_mode) {
+      if (!game_mode_enabled) {
         set_single_persistent_default_layer(_GAME_LAYER);
         set_lighting_color_temporarily(LC_BLUE);
       } else {
         set_single_persistent_default_layer(_MAIN_LAYER);
         set_lighting_color_temporarily(LC_RED);
       }
-      can_enable_game_mode = !can_enable_game_mode;
+      game_mode_enabled = !game_mode_enabled;
       reset_tap_dance(state);
       return;
     default:
@@ -138,7 +141,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |  Ent |  F21 |  Up  |  F22 |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
-    * | Fn*  | Ctrl | Alt  | GUI  |Lower |  Spc |  Spc |Raise |  GUI | Down |  Up  |  Up  | Left | Down |Right |
+    * | Fn*  | Ctrl | Alt  | GUI  |Lower |    Space    |Raise |  GUI | Down |  Up  |  Up  | Left | Down |Right |
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_MAIN_LAYER] = LAYOUT_ortho_5x15(
@@ -180,7 +183,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |  Ent |  F21 |  Up  |  F22 |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
-    * | Shift| Ctrl | Alt  | GUI  |Lower |  Spc |  Spc |Raise |  GUI | Copy | Paste| Util | Left | Down |Right |
+    * | Shift| Ctrl | Alt  | GUI  |Lower |    Space    |Raise |  GUI | Copy | Paste| Util | Left | Down |Right |
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_GAME_LAYER] = LAYOUT_ortho_5x15(
@@ -269,55 +272,57 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case MACRO_REFRESH:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("r"));
+        OSS_SEND("r");
       }
       return false;
       break;
     case MACRO_COPY:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("c"));
+        OSS_SEND("c");
       }
       return false;
       break;
     case MACRO_PASTE:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("v"));
+        OSS_SEND("v");
       }
       return false;
       break;
     case MACRO_CUT:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("x"));
+        OSS_SEND("x");
       }
       return false;
       break;
     case MACRO_PALETTE:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("p"));
+        OSS_SEND("p");
       }
       return false;
       break;
     case MACRO_REDO:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD(SS_LSFT("z")));
+        OSS_SEND(SS_LSFT("z"));
       }
       return false;
       break;
     case MACRO_UNDO:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("z"));
+        OSS_SEND("z");
       }
       return false;
       break;
     case MACRO_CP_URL:
       if (record->event.pressed) {
-        SEND_STRING(OSS_MOD("l")OSS_MOD("c"));
+        OSS_SEND("l");
+        OSS_SEND("c");
+        // SEND_STRING(OSSS_MOD("l")OSSS_MOD("c"));
       }
       return false;
       break;
     case MACRO_INC_HUE:
       if (record->event.pressed) {
-        isUserChangingRgb = true;
+        is_user_changing_rgb = true;
         set_hsv_from_eeprom();
         rgblight_increase_hue();
       }
@@ -325,7 +330,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
     case MACRO_DEC_HUE:
       if (record->event.pressed) {
-        isUserChangingRgb = true;
+        is_user_changing_rgb = true;
         set_hsv_from_eeprom();
         rgblight_decrease_hue();
       }
@@ -363,7 +368,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     case _GAME_LAYER:
         set_hsv_from_eeprom();
         // turn off the rgb change flag once we get back to the default layer
-        isUserChangingRgb = false;
+        is_user_changing_rgb = false;
         break;
     case _LOWER_LAYER:
         set_lighting_color_temporarily(LC_AMBER);
@@ -374,7 +379,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     case _ADJUST_LAYER:
         // Note: if we did't want a specific color for our ADJUST layer it would make
         // things a little easier. We would just use set_hsv_from_eeprom() call below
-        // instead of having an if block and isUserChangingRgb state. But since we
+        // instead of having an if block and is_user_changing_rgb state. But since we
         // want this layer to have its own color, we have a couple things to consider:
         // 1) We have to use this layer's color as a baseline (or starting point)
         //    everytime we want to update the Hue Saturation and/or Brightness levels.
@@ -383,8 +388,8 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         //    base layer color again first, then scroll the brightness. Possible way around this
         //    might be a macro (mapped to this layer) that sets the boot-time loaded hsv values.
         // 2) We need to temporarily show the "updated" lighting instead of our layer's base color
-        //    while we are switching between hsv values. Hence tracking the isUserChangingRgb state.
-        if (isUserChangingRgb) {
+        //    while we are switching between hsv values. Hence tracking the is_user_changing_rgb state.
+        if (is_user_changing_rgb) {
           // show the color that is saved/changing instead of fixed layer color
           set_hsv_from_eeprom();
         } else {
@@ -418,8 +423,8 @@ void keyboard_post_init_user(void) {
 void matrix_scan_user(void) {
 
   // disable the bootup animation after time elapsed
-  if (!is_boot_animation_done()) {
-    check_boot_animation();
+  if (!is_boot_animation_done) {
+    is_boot_animation_done = check_boot_animation();
   }
 
   // release app switcher check
