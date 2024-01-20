@@ -27,19 +27,15 @@ static uint8_t s = 255;
 static uint8_t v = 0;
 
 // default animation
-static int rgbMode = RGB_MODE_PLAIN;
+static uint8_t rgb_mode = 1;
 
-// boot animation
-static int rgbBootMode = RGB_MODE_SNAKE;
-// static int rgbBootMode = RGB_MODE_SWIRL;
-// static int rgbBootMode = RGB_MODE_XMAS;
-// static int rgbBootMode = RGB_MODE_FORWARD;
-// static int rgbBootMode = RGB_MODE_RAINBOW;
-// static int rgbBootMode = RGB_MODE_BREATHE;
+// can be set to another mode via set_boot_animation_mode() function
+static uint8_t rgb_boot_mode = (uint8_t) BAM_STRIPE_RUNNER;
+
 
 // boot timeout vars
-static bool bootComplete = false;
-static int bootTimeoutDuration = 5000;
+static bool boot_complete = false;
+static int boot_duration_ms = 5000;
 static int bootTimeout = 0;
 
 
@@ -48,8 +44,8 @@ static void init_hsv(void) {
 	h = rgblight_get_hue();
 	s = rgblight_get_sat();
 	v = rgblight_get_val();
-	rgbMode = rgblight_get_mode();
-  rgblight_sethsv(h,s,v);
+	rgb_mode = rgblight_get_mode();
+    rgblight_sethsv(h,s,v);
 }
 
 /*
@@ -66,10 +62,26 @@ void init_lighting(void) {
   rgblight_enable();
 
   // animate with boot sequence
-  rgblight_mode_noeeprom(rgbBootMode);
+  rgblight_mode_noeeprom(rgb_boot_mode);
 }
 
-// load and set HSV values from eeprom
+/*
+  Set mode for boot sequence before calling init_lighting
+*/
+void set_boot_animation_mode(BOOT_ANIMATION_MODE mode) {
+    rgb_boot_mode = (uint8_t)mode;
+}
+
+/*
+  Set max duration of boot sequence before calling init_lighting
+*/
+void set_boot_duration(int duration_ms) {
+    boot_duration_ms = duration_ms;
+}
+
+/*
+  Load and set HSV values from eeprom.
+*/
 void set_hsv_from_eeprom(void) {
   rgblight_reload_from_eeprom();
 
@@ -85,17 +97,17 @@ void set_hsv_from_eeprom(void) {
   Deterimes when to stop bootup animation
 */
 bool check_boot_animation(void) {
-  if (bootComplete) {
-    return bootComplete;
+  if (boot_complete) {
+    return boot_complete;
   }
 
-  bootComplete = (timer_elapsed(bootTimeout) > bootTimeoutDuration) ? true : false;
+  boot_complete = (timer_elapsed(bootTimeout) > boot_duration_ms) ? true : false;
 
-  if (bootComplete) {
-    rgblight_mode(rgbMode);
+  if (boot_complete) {
+    rgblight_mode(rgb_mode);
   }
 
-  return bootComplete;
+  return boot_complete;
 }
 
 
@@ -103,7 +115,7 @@ bool check_boot_animation(void) {
   Allows setting an rgb lighting color
 */
 void set_lighting_color_temporarily(LIGHTING_COLOR color) {
-  if (bootComplete == 0) {
+  if (boot_complete == 0) {
     return;
   }
   switch (color) {

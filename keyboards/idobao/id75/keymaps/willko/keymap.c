@@ -93,6 +93,10 @@ enum {
 */
 void fn_key_tapped(tap_dance_state_t *state, void *user_data) {
   switch (state->count) {
+    case 1: // tapping 1 time opens the closed tab
+      OSS_SEND(SS_LSFT("t"));
+      reset_tap_dance(state);
+      return;
     case 2: // tapping 2 times opens the command palette
       OSS_SEND(SS_LSFT("p"));
       reset_tap_dance(state);
@@ -141,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |  Ent |  F21 |  Up  |  F22 |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
-    * | Fn*  | Ctrl | Alt  | GUI  |Lower |    Space    |Raise |  GUI | Down |  Up  |  Up  | Left | Down |Right |
+    * | Fn*  | Ctrl | Alt  | GUI  |Lower |    Space    |Raise |  GUI | Copy | Paste| Util | Left | Down |Right |
     * `--------------------------------------------------------------------------------------------------------'
     */
     [_MAIN_LAYER] = LAYOUT_ortho_5x15(
@@ -181,7 +185,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * | Tab  |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |   '  |  Del |  End | PgDn |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
-    * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |  Ent |  F21 |  Up  |  F22 |
+    * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |  Ent |  F21 |  Up  | Fn*  |
     * |------+------+------+------+------+------+------+------+------+------+------+------+------+------+------|
     * | Shift| Ctrl | Alt  | GUI  |Lower |    Space    |Raise |  GUI | Copy | Paste| Util | Left | Down |Right |
     * `--------------------------------------------------------------------------------------------------------'
@@ -316,7 +320,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed) {
         OSS_SEND("l");
         OSS_SEND("c");
-        // SEND_STRING(OSSS_MOD("l")OSSS_MOD("c"));
       }
       return false;
       break;
@@ -365,10 +368,16 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     state
   )) {
     case _MAIN_LAYER:
+        set_hsv_from_eeprom();
+        // turn off the rgb change flag once we get back to the default layer
+        is_user_changing_rgb = false;
+        game_mode_enabled = false; // track game mode state
+        break;
     case _GAME_LAYER:
         set_hsv_from_eeprom();
         // turn off the rgb change flag once we get back to the default layer
         is_user_changing_rgb = false;
+        game_mode_enabled = true; // track game mode state
         break;
     case _LOWER_LAYER:
         set_lighting_color_temporarily(LC_AMBER);
@@ -412,6 +421,18 @@ layer_state_t layer_state_set_user(layer_state_t state) {
   Callback for default layer functions. Called on keyboard initialization.
 */
 void keyboard_post_init_user(void) {
+
+  // configure boot animation
+
+  // set_boot_animation_mode(BAM_SWIRL);
+  // set_boot_duration(1500);
+
+  set_boot_animation_mode(BAM_STRIPE_RUNNER);
+  set_boot_duration(3700);
+
+  // set_boot_animation_mode(BAM_MATRIX_RAIN);
+  // set_boot_duration(7000);
+
   // init boot animation
   init_lighting();
 };
